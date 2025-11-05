@@ -8,7 +8,7 @@ jobs:
 
     defaults:
       run:
-        working-directory: app00_app/app00   # 👈 change this to your Flutter folder name
+        working-directory: app00   # 👈 your Flutter folder name
 
     steps:
       - uses: actions/checkout@v4
