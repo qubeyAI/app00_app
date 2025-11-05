@@ -1,30 +1,45 @@
-name: Build Flutter APK
+name: Build and Release Flutter APK
 
-on: [push]
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
-    defaults:
-      run:
-        working-directory: app00   # 👈 your Flutter folder name
-
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - uses: subosito/flutter-action@v2
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.22.0'
+          flutter-version: '3.24.0'  # or your version
 
-      - name: Get dependencies
+      - name: Install dependencies
+        working-directory: app00
         run: flutter pub get
 
       - name: Build release APK
+        working-directory: app00
         run: flutter build apk --release
 
-      - name: Upload APK artifact
-        uses: actions/upload-artifact@v4
+      - name: Create Release
+        id: create_release
+        uses: softprops/action-gh-release@v2
         with:
-          name: app-release-apk
-          path: app00/build/app/outputs/flutter-apk/app-release.apk
+          tag_name: v1.${{ github.run_number }}
+          name: "Flutter APK v1.${{ github.run_number }}"
+          body: "Auto-built release APK for commit ${{ github.sha }}"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload APK to Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: app00/build/app/outputs/flutter-apk/app-release.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
